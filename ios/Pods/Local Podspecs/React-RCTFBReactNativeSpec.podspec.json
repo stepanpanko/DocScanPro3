@@ -39,51 +39,21 @@
     ]
   },
   "dependencies": {
-    "React-jsi": [
-
-    ],
-    "RCTRequired": [
-
-    ],
-    "RCTTypeSafety": [
-
-    ],
-    "React-Core": [
-
-    ],
-    "React-NativeModulesApple": [
-
-    ],
-    "ReactCommon": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-jsi": [],
+    "RCTRequired": [],
+    "RCTTypeSafety": [],
+    "React-Core": [],
+    "React-NativeModulesApple": [],
+    "ReactCommon": [],
+    "hermes-engine": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   },
   "script_phases": [
     {
@@ -102,27 +72,13 @@
         "HEADER_SEARCH_PATHS": "\"${PODS_CONFIGURATION_BUILD_DIR}/React-featureflags/React_featureflags.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-debug/React_debug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-rendererdebug/React_rendererdebug.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-utils/React_utils.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers\" \"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx\""
       },
       "dependencies": {
-        "React-featureflags": [
-
-        ],
-        "React-debug": [
-
-        ],
-        "React-rendererdebug": [
-
-        ],
-        "React-utils": [
-
-        ],
-        "React-graphics": [
-
-        ],
-        "React-Fabric": [
-
-        ],
-        "Yoga": [
-
-        ]
+        "React-featureflags": [],
+        "React-debug": [],
+        "React-rendererdebug": [],
+        "React-utils": [],
+        "React-graphics": [],
+        "React-Fabric": [],
+        "Yoga": []
       }
     }
   ]

@@ -50,62 +50,24 @@
     "RCTTypeSafety": [
       "0.81.4"
     ],
-    "React-jsi": [
-
-    ],
-    "React-logger": [
-
-    ],
-    "React-featureflags": [
-
-    ],
-    "React-utils": [
-
-    ],
-    "Yoga": [
-
-    ],
-    "React-ImageManager": [
-
-    ],
-    "ReactCommon": [
-
-    ],
-    "React-graphics": [
-
-    ],
-    "React-Fabric": [
-
-    ],
-    "React-rendererdebug": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-jsi": [],
+    "React-logger": [],
+    "React-featureflags": [],
+    "React-utils": [],
+    "Yoga": [],
+    "React-ImageManager": [],
+    "ReactCommon": [],
+    "React-graphics": [],
+    "React-Fabric": [],
+    "React-rendererdebug": [],
+    "hermes-engine": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   }
 }

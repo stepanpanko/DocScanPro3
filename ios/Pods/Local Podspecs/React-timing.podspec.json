@@ -20,8 +20,6 @@
     "DEFINES_MODULE": "YES"
   },
   "dependencies": {
-    "React-debug": [
-
-    ]
+    "React-debug": []
   }
 }

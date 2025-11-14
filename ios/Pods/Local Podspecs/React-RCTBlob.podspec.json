@@ -41,59 +41,23 @@
     ]
   },
   "dependencies": {
-    "React-jsi": [
-
-    ],
-    "React-Core/RCTBlobHeaders": [
-
-    ],
-    "React-Core/RCTWebSocket": [
-
-    ],
-    "React-RCTNetwork": [
-
-    ],
-    "React-RCTFBReactNativeSpec": [
-
-    ],
-    "React-NativeModulesApple": [
-
-    ],
-    "React-jsinspector": [
-
-    ],
-    "React-jsinspectorcdp": [
-
-    ],
-    "ReactCommon": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-jsi": [],
+    "React-Core/RCTBlobHeaders": [],
+    "React-Core/RCTWebSocket": [],
+    "React-RCTNetwork": [],
+    "React-RCTFBReactNativeSpec": [],
+    "React-NativeModulesApple": [],
+    "React-jsinspector": [],
+    "React-jsinspectorcdp": [],
+    "ReactCommon": [],
+    "hermes-engine": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   }
 }

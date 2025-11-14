@@ -42,12 +42,16 @@ target 'DocScanPro3Temp' do
     # absolute path so running pod install from ios/ works
     app_path: "#{Pod::Config.instance.installation_root}/.."
   )
+end
 
-  post_install do |installer|
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      mac_catalyst_enabled: false
-    )
+# ---- keep post_install OUTSIDE the target block ----
+post_install do |installer|
+  react_native_post_install(installer)
+
+  # Normalize all pods’ iOS target to silence 9.0 warnings
+  installer.pods_project.targets.each do |t|
+    t.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.4'
+    end
   end
 end

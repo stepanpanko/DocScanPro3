@@ -72,108 +72,40 @@
     "CLANG_CXX_LANGUAGE_STANDARD": "c++20"
   },
   "dependencies": {
-    "React-Core": [
-
-    ],
-    "React-RCTImage": [
-
-    ],
-    "Yoga": [
-
-    ],
-    "React-RCTText": [
-
-    ],
-    "React-jsi": [
-
-    ],
-    "React-FabricImage": [
-
-    ],
-    "React-Fabric": [
-
-    ],
-    "React-FabricComponents": [
-
-    ],
-    "React-graphics": [
-
-    ],
-    "React-ImageManager": [
-
-    ],
-    "React-featureflags": [
-
-    ],
-    "React-debug": [
-
-    ],
-    "React-utils": [
-
-    ],
-    "React-performancetimeline": [
-
-    ],
-    "React-rendererdebug": [
-
-    ],
-    "React-rendererconsistency": [
-
-    ],
-    "React-runtimeexecutor": [
-
-    ],
-    "React-runtimescheduler": [
-
-    ],
-    "React-RCTAnimation": [
-
-    ],
-    "React-jsinspector": [
-
-    ],
-    "React-jsinspectorcdp": [
-
-    ],
-    "React-jsinspectornetwork": [
-
-    ],
-    "React-jsinspectortracing": [
-
-    ],
-    "React-renderercss": [
-
-    ],
-    "React-RCTFBReactNativeSpec": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-Core": [],
+    "React-RCTImage": [],
+    "Yoga": [],
+    "React-RCTText": [],
+    "React-jsi": [],
+    "React-FabricImage": [],
+    "React-Fabric": [],
+    "React-FabricComponents": [],
+    "React-graphics": [],
+    "React-ImageManager": [],
+    "React-featureflags": [],
+    "React-debug": [],
+    "React-utils": [],
+    "React-performancetimeline": [],
+    "React-rendererdebug": [],
+    "React-rendererconsistency": [],
+    "React-runtimeexecutor": [],
+    "React-runtimescheduler": [],
+    "React-RCTAnimation": [],
+    "React-jsinspector": [],
+    "React-jsinspectorcdp": [],
+    "React-jsinspectornetwork": [],
+    "React-jsinspectortracing": [],
+    "React-renderercss": [],
+    "React-RCTFBReactNativeSpec": [],
+    "hermes-engine": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   },
   "testspecs": [
     {

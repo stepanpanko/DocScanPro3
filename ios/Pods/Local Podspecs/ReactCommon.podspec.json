@@ -31,30 +31,14 @@
     "GCC_WARN_PEDANTIC": "YES"
   },
   "dependencies": {
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   },
   "subspecs": [
     {
@@ -75,9 +59,7 @@
         "React-logger": [
           "0.81.4"
         ],
-        "hermes-engine": [
-
-        ]
+        "hermes-engine": []
       },
       "subspecs": [
         {
@@ -86,9 +68,7 @@
             "React-jsi": [
               "0.81.4"
             ],
-            "hermes-engine": [
-
-            ]
+            "hermes-engine": []
           },
           "source_files": "react/bridging/**/*.{cpp,h}",
           "exclude_files": "react/bridging/tests",

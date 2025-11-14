@@ -38,84 +38,32 @@
     ]
   },
   "dependencies": {
-    "React-jsiexecutor": [
-
-    ],
-    "RCTRequired": [
-
-    ],
-    "RCTTypeSafety": [
-
-    ],
-    "ReactCommon/turbomodule/core": [
-
-    ],
-    "React-jsi": [
-
-    ],
-    "React-logger": [
-
-    ],
-    "React-Core": [
-
-    ],
-    "React-debug": [
-
-    ],
-    "React-featureflags": [
-
-    ],
-    "React-utils": [
-
-    ],
-    "React-runtimescheduler": [
-
-    ],
-    "React-cxxreact": [
-
-    ],
-    "Yoga": [
-
-    ],
-    "React-RCTFBReactNativeSpec": [
-
-    ],
-    "React-rendererdebug": [
-
-    ],
-    "React-graphics": [
-
-    ],
-    "React-Fabric": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-jsiexecutor": [],
+    "RCTRequired": [],
+    "RCTTypeSafety": [],
+    "ReactCommon/turbomodule/core": [],
+    "React-jsi": [],
+    "React-logger": [],
+    "React-Core": [],
+    "React-debug": [],
+    "React-featureflags": [],
+    "React-utils": [],
+    "React-runtimescheduler": [],
+    "React-cxxreact": [],
+    "Yoga": [],
+    "React-RCTFBReactNativeSpec": [],
+    "React-rendererdebug": [],
+    "React-graphics": [],
+    "React-Fabric": [],
+    "hermes-engine": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   },
   "subspecs": [
     {
@@ -199,9 +147,7 @@
     {
       "name": "textlayoutmanager",
       "dependencies": {
-        "React-Fabric": [
-
-        ]
+        "React-Fabric": []
       },
       "source_files": [
         "react/renderer/textlayoutmanager/platform/ios/**/*.{m,mm,cpp,h}",

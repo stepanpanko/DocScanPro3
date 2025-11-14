@@ -37,65 +37,25 @@
     "GCC_WARN_PEDANTIC": "YES"
   },
   "dependencies": {
-    "React-jsitracing": [
-
-    ],
-    "React-jsi": [
-
-    ],
-    "React-utils": [
-
-    ],
-    "React-RuntimeCore": [
-
-    ],
-    "React-featureflags": [
-
-    ],
-    "React-jsinspector": [
-
-    ],
-    "React-jsinspectorcdp": [
-
-    ],
-    "React-jsinspectortracing": [
-
-    ],
-    "React-hermes": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "React-runtimeexecutor": [
-
-    ],
-    "React-jsitooling": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-jsitracing": [],
+    "React-jsi": [],
+    "React-utils": [],
+    "React-RuntimeCore": [],
+    "React-featureflags": [],
+    "React-jsinspector": [],
+    "React-jsinspectorcdp": [],
+    "React-jsinspectortracing": [],
+    "React-hermes": [],
+    "hermes-engine": [],
+    "React-runtimeexecutor": [],
+    "React-jsitooling": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   }
 }

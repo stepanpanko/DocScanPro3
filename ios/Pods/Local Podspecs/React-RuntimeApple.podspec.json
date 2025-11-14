@@ -39,90 +39,34 @@
     "GCC_WARN_PEDANTIC": "YES"
   },
   "dependencies": {
-    "React-jsiexecutor": [
-
-    ],
-    "React-cxxreact": [
-
-    ],
-    "React-callinvoker": [
-
-    ],
-    "React-runtimeexecutor": [
-
-    ],
-    "React-runtimescheduler": [
-
-    ],
-    "React-jsi": [
-
-    ],
-    "React-Core/Default": [
-
-    ],
-    "React-CoreModules": [
-
-    ],
-    "React-NativeModulesApple": [
-
-    ],
-    "React-RCTFabric": [
-
-    ],
-    "React-RuntimeCore": [
-
-    ],
-    "React-Mapbuffer": [
-
-    ],
-    "React-jserrorhandler": [
-
-    ],
-    "React-jsinspector": [
-
-    ],
-    "React-featureflags": [
-
-    ],
-    "React-jsitooling": [
-
-    ],
-    "React-RCTFBReactNativeSpec": [
-
-    ],
-    "React-utils": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "React-RuntimeHermes": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-jsiexecutor": [],
+    "React-cxxreact": [],
+    "React-callinvoker": [],
+    "React-runtimeexecutor": [],
+    "React-runtimescheduler": [],
+    "React-jsi": [],
+    "React-Core/Default": [],
+    "React-CoreModules": [],
+    "React-NativeModulesApple": [],
+    "React-RCTFabric": [],
+    "React-RuntimeCore": [],
+    "React-Mapbuffer": [],
+    "React-jserrorhandler": [],
+    "React-jsinspector": [],
+    "React-featureflags": [],
+    "React-jsitooling": [],
+    "React-RCTFBReactNativeSpec": [],
+    "React-utils": [],
+    "hermes-engine": [],
+    "React-RuntimeHermes": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   },
   "exclude_files": "ReactCommon/RCTJscInstance.{mm,h}"
 }

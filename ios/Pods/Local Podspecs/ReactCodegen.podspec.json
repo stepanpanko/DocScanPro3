@@ -31,94 +31,40 @@
       "$(PODS_ROOT)/SocketRocket",
       "$(PODS_ROOT)/RCT-Folly"
     ],
-    "FRAMEWORK_SEARCH_PATHS": [
-
-    ],
+    "FRAMEWORK_SEARCH_PATHS": [],
     "OTHER_CPLUSPLUSFLAGS": "$(inherited) -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DFOLLY_HAVE_CLOCK_GETTIME=1 -Wno-comma -Wno-shorten-64-to-32 -Wno-documentation"
   },
   "dependencies": {
-    "React-jsiexecutor": [
-
-    ],
-    "RCTRequired": [
-
-    ],
-    "RCTTypeSafety": [
-
-    ],
-    "React-Core": [
-
-    ],
-    "React-jsi": [
-
-    ],
-    "ReactCommon/turbomodule/bridging": [
-
-    ],
-    "ReactCommon/turbomodule/core": [
-
-    ],
-    "React-NativeModulesApple": [
-
-    ],
-    "React-graphics": [
-
-    ],
-    "React-rendererdebug": [
-
-    ],
-    "React-Fabric": [
-
-    ],
-    "React-FabricImage": [
-
-    ],
-    "React-debug": [
-
-    ],
-    "React-utils": [
-
-    ],
-    "React-featureflags": [
-
-    ],
-    "React-RCTAppDelegate": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-jsiexecutor": [],
+    "RCTRequired": [],
+    "RCTTypeSafety": [],
+    "React-Core": [],
+    "React-jsi": [],
+    "ReactCommon/turbomodule/bridging": [],
+    "ReactCommon/turbomodule/core": [],
+    "React-NativeModulesApple": [],
+    "React-graphics": [],
+    "React-rendererdebug": [],
+    "React-Fabric": [],
+    "React-FabricImage": [],
+    "React-debug": [],
+    "React-utils": [],
+    "React-featureflags": [],
+    "React-RCTAppDelegate": [],
+    "hermes-engine": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   },
   "script_phases": {
     "name": "Generate Specs",
     "execution_position": "before_compile",
-    "input_files": [
-
-    ],
+    "input_files": [],
     "show_env_vars_in_log": true,
     "output_files": [
       "${DERIVED_FILE_DIR}/react-codegen.log"

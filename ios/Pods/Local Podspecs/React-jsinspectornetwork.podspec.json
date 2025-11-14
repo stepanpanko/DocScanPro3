@@ -30,41 +30,17 @@
     "DEFINES_MODULE": "YES"
   },
   "dependencies": {
-    "React-jsinspectorcdp": [
-
-    ],
-    "React-featureflags": [
-
-    ],
-    "React-performancetimeline": [
-
-    ],
-    "React-timing": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-jsinspectorcdp": [],
+    "React-featureflags": [],
+    "React-performancetimeline": [],
+    "React-timing": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   }
 }

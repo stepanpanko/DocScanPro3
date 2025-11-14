@@ -37,62 +37,24 @@
   },
   "source_files": "ReactCommon/**/*.{mm,cpp,h}",
   "dependencies": {
-    "ReactCommon/turbomodule/core": [
-
-    ],
-    "ReactCommon/turbomodule/bridging": [
-
-    ],
-    "React-callinvoker": [
-
-    ],
-    "React-Core": [
-
-    ],
-    "React-cxxreact": [
-
-    ],
-    "React-jsi": [
-
-    ],
-    "React-featureflags": [
-
-    ],
-    "React-runtimeexecutor": [
-
-    ],
-    "React-jsinspector": [
-
-    ],
-    "React-jsinspectorcdp": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "ReactCommon/turbomodule/core": [],
+    "ReactCommon/turbomodule/bridging": [],
+    "React-callinvoker": [],
+    "React-Core": [],
+    "React-cxxreact": [],
+    "React-jsi": [],
+    "React-featureflags": [],
+    "React-runtimeexecutor": [],
+    "React-jsinspector": [],
+    "React-jsinspectorcdp": [],
+    "hermes-engine": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   }
 }

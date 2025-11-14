@@ -21,44 +21,18 @@
     "DEFINES_MODULE": "YES"
   },
   "dependencies": {
-    "React-jsi": [
-
-    ],
-    "React-jsiexecutor": [
-
-    ],
-    "hermes-engine": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ],
-    "ReactCommon/turbomodule/core": [
-
-    ],
-    "React-RCTFBReactNativeSpec": [
-
-    ]
+    "React-jsi": [],
+    "React-jsiexecutor": [],
+    "hermes-engine": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": [],
+    "ReactCommon/turbomodule/core": [],
+    "React-RCTFBReactNativeSpec": []
   }
 }

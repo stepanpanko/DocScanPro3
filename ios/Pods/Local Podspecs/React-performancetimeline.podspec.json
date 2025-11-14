@@ -29,41 +29,17 @@
     ]
   },
   "dependencies": {
-    "React-featureflags": [
-
-    ],
-    "React-jsinspectortracing": [
-
-    ],
-    "React-timing": [
-
-    ],
-    "React-perflogger": [
-
-    ],
-    "glog": [
-
-    ],
-    "boost": [
-
-    ],
-    "DoubleConversion": [
-
-    ],
-    "fast_float": [
-
-    ],
-    "fmt": [
-
-    ],
-    "RCT-Folly": [
-
-    ],
-    "SocketRocket": [
-
-    ],
-    "RCT-Folly/Fabric": [
-
-    ]
+    "React-featureflags": [],
+    "React-jsinspectortracing": [],
+    "React-timing": [],
+    "React-perflogger": [],
+    "glog": [],
+    "boost": [],
+    "DoubleConversion": [],
+    "fast_float": [],
+    "fmt": [],
+    "RCT-Folly": [],
+    "SocketRocket": [],
+    "RCT-Folly/Fabric": []
   }
 }
