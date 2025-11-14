@@ -24,6 +24,8 @@ raise 'react_native_pods.rb not found' if rn_scripts.nil? || rn_scripts.empty?
 Pod::UI.puts "Resolved RN scripts: #{rn_scripts}"
 require rn_scripts
 
+source 'https://cdn.cocoapods.org/'
+
 platform :ios, '15.4'
 prepare_react_native_project!
 
@@ -48,7 +50,7 @@ end
 post_install do |installer|
   react_native_post_install(installer)
 
-  # Normalize all pods’ iOS target to silence 9.0 warnings
+  # Normalize all pods' iOS target to silence 9.0 warnings
   installer.pods_project.targets.each do |t|
     t.build_configurations.each do |config|
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.4'

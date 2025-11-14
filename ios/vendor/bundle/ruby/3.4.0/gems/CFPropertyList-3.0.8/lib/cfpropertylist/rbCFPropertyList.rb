@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-require 'kconv'
+require_relative "kconv_stub"
 require 'date'
 require 'time'
 

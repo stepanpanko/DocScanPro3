@@ -52,6 +52,8 @@
 #import "rnscreensJSI.h"
 #import "RNShareSpec/RNShareSpec.h"
 #import "RNShareSpecJSI.h"
+#import "rnworklets/rnworklets.h"
+#import "rnworkletsJSI.h"
 #import "safeareacontext/safeareacontext.h"
 #import "safeareacontextJSI.h"
 

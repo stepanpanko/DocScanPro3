@@ -31,6 +31,19 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_react-native-packager._tcp</string>
+		<string>_react-native-debugger._tcp</string>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>DocScanPro needs camera access to scan documents.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>DocScanPro connects to the Metro bundler on your Mac for development.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Allow saving exported scans to your photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Allow access to import images for scanning.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
