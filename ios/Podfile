@@ -9,9 +9,9 @@ rn_scripts = Pod::Executable.execute_command(
     # Use createRequire to resolve from the app root (not ios/)
     "const { createRequire } = require('module');" \
     "const path = require('path');" \
-    "const req = createRequire(path.join(process.argv[2], 'package.json'));" \
-    "console.log(req.resolve('react-native/scripts/react_native_pods.rb'));",
-    project_root
+    "const projectRoot = '#{project_root}';" \
+    "const req = createRequire(path.join(projectRoot, 'package.json'));" \
+    "console.log(req.resolve('react-native/scripts/react_native_pods.rb'));"
   ]
 ).strip
 
