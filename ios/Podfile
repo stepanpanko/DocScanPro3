@@ -1,4 +1,10 @@
-# Resolve react_native_pods.rb with node to allow for hoisting
+# Resolve react_native_pods.rb without relying on node/argv tricks
+react_native_path = File.join(__dir__, '..', 'node_modules', 'react-native')
+require File.join(react_native_path, 'scripts', 'react_native_pods.rb')
+
+platform :ios, '15.4'
+prepare_react_native_project!
+
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
     "react-native/scripts/react_native_pods.rb",
