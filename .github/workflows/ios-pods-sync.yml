@@ -1,14 +1,20 @@
 name: iOS Pods Sync
-
 on:
   workflow_dispatch:
 
 jobs:
   pods:
     runs-on: macos-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # Pick a concrete Xcode version >= 16.1 (explicitly select it)
+      - name: Select Xcode 16.2
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '16.2'
 
       - name: Setup Node & pnpm
         uses: actions/setup-node@v4
@@ -21,18 +27,27 @@ jobs:
           corepack prepare pnpm@10.22.0 --activate || true
           pnpm install --ignore-scripts
 
+      # (Optional) sanity print of RN scripts path from your Podfile resolver
+      - name: Print RN version
+        run: node -e "console.log('react-native:', require('./node_modules/react-native/package.json').version)"
+
       - name: Install Pods
         working-directory: ios
-        run: pod install --repo-update
+        run: |
+          pod repo update
+          pod install --repo-update
 
+      # commit Pods to a separate branch even though .gitignore blocks it
       - name: Configure push auth
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Commit Pods to branch pod-sync
         run: |
           git checkout -B pod-sync
-          git add ios/Podfile.lock ios/Pods
-          git commit -m "ci(pods): sync" || echo "No changes to commit"
+          git add -f ios/Pods ios/Podfile.lock
+          git commit -m "ci(pods): sync" || echo "no changes to commit"
           git push -f origin pod-sync
