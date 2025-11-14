@@ -21,7 +21,7 @@ rn_scripts = Pod::Executable.execute_command(
 ).strip
 
 raise 'react_native_pods.rb not found' if rn_scripts.nil? || rn_scripts.empty?
-Pod::UI.puts \"Resolved RN scripts: #{rn_scripts}\"
+Pod::UI.puts "Resolved RN scripts: #{rn_scripts}"
 require rn_scripts
 
 platform :ios, '15.4'
