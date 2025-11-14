@@ -1,0 +1,6 @@
+module react_native_document_scanner_plugin {
+  umbrella header "react-native-document-scanner-plugin-umbrella.h"
+
+  export *
+  module * { export * }
+}

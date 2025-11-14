@@ -1,0 +1,6 @@
+module react_native_text_recognition {
+  umbrella header "react-native-text-recognition-umbrella.h"
+
+  export *
+  module * { export * }
+}

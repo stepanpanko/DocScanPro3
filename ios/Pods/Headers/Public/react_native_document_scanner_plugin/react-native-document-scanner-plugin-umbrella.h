@@ -1,0 +1,1 @@
+../../../Target Support Files/react-native-document-scanner-plugin/react-native-document-scanner-plugin-umbrella.h

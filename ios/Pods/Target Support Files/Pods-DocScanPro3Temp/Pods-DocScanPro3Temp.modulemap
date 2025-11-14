@@ -1,0 +1,6 @@
+module Pods_DocScanPro3Temp {
+  umbrella header "Pods-DocScanPro3Temp-umbrella.h"
+
+  export *
+  module * { export * }
+}

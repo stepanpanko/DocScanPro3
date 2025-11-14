@@ -1,0 +1,21 @@
+{
+  "name": "react-native-text-recognition",
+  "version": "1.0.2",
+  "summary": "text recognition utilizing the Vision framework on iOS and Firebase ML on Android",
+  "homepage": "https://github.com/JoeyEamigh/react-native-text-recognition#readme",
+  "license": "MIT",
+  "authors": "Joey Eamigh <55670930+JoeyEamigh@users.noreply.github.com> (https://github.com/JoeyEamigh)",
+  "platforms": {
+    "ios": "13.0"
+  },
+  "source": {
+    "git": "https://github.com/JoeyEamigh/react-native-text-recognition.git",
+    "tag": "1.0.2"
+  },
+  "source_files": "ios/**/*.{h,m,mm,swift}",
+  "dependencies": {
+    "React-Core": [
+
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "react-native-document-scanner-plugin",
+  "version": "1.0.1",
+  "summary": "A React Native plugin that lets you scan documents using Android and iOS",
+  "homepage": "https://github.com/websitebeaver/react-native-document-scanner-plugin#readme",
+  "license": "MIT",
+  "authors": "David Marcus <david@websitebeaver.com> (https://github.com/websitebeaver)",
+  "platforms": {
+    "ios": "13.0"
+  },
+  "source": {
+    "git": "https://github.com/websitebeaver/react-native-document-scanner-plugin.git",
+    "tag": "1.0.1"
+  },
+  "source_files": "ios/**/*.{h,m,mm,swift}",
+  "dependencies": {
+    "React-Core": [
+
+    ]
+  }
+}

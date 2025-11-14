@@ -1,0 +1,1 @@
+../../../../../node_modules/react-native-text-recognition/ios/TextRecognition-Bridging-Header.h
