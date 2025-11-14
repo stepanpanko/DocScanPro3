@@ -1,27 +1,33 @@
-# -- RN Pods bootstrap (pnpm/CI safe, no env needed) -------------------------
-project_root = File.expand_path('..', __dir__)
+# -- RN Pods bootstrap (pnpm/CI safe; no env args) ---------------------------
+require 'pathname'
+require 'json'
+
+# project root = ../ from ios/
+project_root      = File.expand_path('..', __dir__)
+project_root_json = JSON.generate(project_root) # safe for embedding in JS
 
 # Ask Node to resolve the real path to react_native_pods.rb from project root
 rn_scripts = Pod::Executable.execute_command(
   'node',
   [
     '-e',
-    # Use createRequire to resolve from the app root (not ios/)
+    # Use createRequire(root/package.json) so it works with pnpm hoisting
     "const { createRequire } = require('module');" \
     "const path = require('path');" \
-    "const projectRoot = '#{project_root}';" \
+    "const projectRoot = #{project_root_json};" \
     "const req = createRequire(path.join(projectRoot, 'package.json'));" \
     "console.log(req.resolve('react-native/scripts/react_native_pods.rb'));"
   ]
 ).strip
 
 raise 'react_native_pods.rb not found' if rn_scripts.nil? || rn_scripts.empty?
+Pod::UI.puts \"Resolved RN scripts: #{rn_scripts}\"
 require rn_scripts
 
 platform :ios, '15.4'
 prepare_react_native_project!
 
-# Optional: export USE_FRAMEWORKS=static|dynamic if you need it
+# Optional: USE_FRAMEWORKS=static|dynamic (only if you need it)
 linkage = ENV['USE_FRAMEWORKS']
 if linkage && !linkage.empty?
   Pod::UI.puts "Configuring CocoaPods with #{linkage}ally linked frameworks".green
@@ -33,6 +39,7 @@ target 'DocScanPro3Temp' do
 
   use_react_native!(
     path: config[:reactNativePath],
+    # absolute path so running pod install from ios/ works
     app_path: "#{Pod::Config.instance.installation_root}/.."
   )
 
