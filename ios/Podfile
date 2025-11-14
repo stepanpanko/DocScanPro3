@@ -1,11 +1,16 @@
-# -- RN Pods bootstrap (works with pnpm & CI) -------------------------------
-react_native_path = File.expand_path('../node_modules/react-native', __dir__)
-require File.join(react_native_path, 'scripts', 'react_native_pods.rb')
+# -- RN Pods bootstrap (pnpm-safe & CI-safe) -------------------------------
+
+# Find react-native inside node_modules no matter how pnpm lays it out.
+rn_dir = Dir.glob(File.expand_path('../node_modules/**/react-native', __dir__))
+           .find { |p| File.exist?(File.join(p, 'scripts', 'react_native_pods.rb')) }
+abort('React Native not installed (react_native_pods.rb not found)') unless rn_dir
+
+require File.join(rn_dir, 'scripts', 'react_native_pods.rb')
 
 platform :ios, '15.4'
 prepare_react_native_project!
 
-# Optional: enable frameworks via env (e.g. USE_FRAMEWORKS=static or dynamic)
+# Optional: export USE_FRAMEWORKS=static|dynamic in CI/local if you need it
 linkage = ENV['USE_FRAMEWORKS']
 if linkage && !linkage.empty?
   Pod::UI.puts "Configuring CocoaPods with #{linkage}ally linked frameworks".green
@@ -17,7 +22,7 @@ target 'DocScanPro3Temp' do
 
   use_react_native!(
     path: config[:reactNativePath],
-    # Absolute path to the app root (required when running from ios/)
+    # absolute path so running pod install from ios/ works
     app_path: "#{Pod::Config.instance.installation_root}/.."
   )
 
