@@ -19,23 +19,11 @@ jobs:
         run: |
           corepack enable
           corepack prepare pnpm@10.22.0 --activate || true
-          pnpm -v
-          node -v
           pnpm install --ignore-scripts
-          # Export the absolute path to react_native_pods.rb for the next step
-          echo "RN_SCRIPTS=$(node -p \"require.resolve('react-native/scripts/react_native_pods.rb')\")" >> "$GITHUB_ENV"
-
-      - name: Verify RN resolve
-        run: |
-          echo "RN_SCRIPTS=$RN_SCRIPTS"
-          test -f "$RN_SCRIPTS"
 
       - name: Install Pods
         working-directory: ios
-        env:
-          RN_SCRIPTS: ${{ env.RN_SCRIPTS }}
-        run: |
-          pod install --repo-update
+        run: pod install --repo-update
 
       - name: Configure push auth
         run: |

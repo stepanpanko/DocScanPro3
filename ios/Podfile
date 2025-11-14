@@ -1,20 +1,27 @@
-# -- RN Pods bootstrap (pnpm/CI safe) ---------------------------------------
+# -- RN Pods bootstrap (pnpm/CI safe, no env needed) -------------------------
+project_root = File.expand_path('..', __dir__)
 
-# Prefer path passed from CI/local via RN_SCRIPTS; fall back to a glob search.
-rn_scripts = ENV['RN_SCRIPTS']
-if rn_scripts.nil? || rn_scripts.empty?
-  rn_dir = Dir.glob(File.expand_path('../node_modules/**/react-native', __dir__))
-             .find { |p| File.exist?(File.join(p, 'scripts', 'react_native_pods.rb')) }
-  abort('React Native not installed (react_native_pods.rb not found)') unless rn_dir
-  rn_scripts = File.join(rn_dir, 'scripts', 'react_native_pods.rb')
-end
+# Ask Node to resolve the real path to react_native_pods.rb from project root
+rn_scripts = Pod::Executable.execute_command(
+  'node',
+  [
+    '-e',
+    # Use createRequire to resolve from the app root (not ios/)
+    "const { createRequire } = require('module');" \
+    "const path = require('path');" \
+    "const req = createRequire(path.join(process.argv[2], 'package.json'));" \
+    "console.log(req.resolve('react-native/scripts/react_native_pods.rb'));",
+    project_root
+  ]
+).strip
 
+raise 'react_native_pods.rb not found' if rn_scripts.nil? || rn_scripts.empty?
 require rn_scripts
 
 platform :ios, '15.4'
 prepare_react_native_project!
 
-# Optional linkage: export USE_FRAMEWORKS=static|dynamic to override
+# Optional: export USE_FRAMEWORKS=static|dynamic if you need it
 linkage = ENV['USE_FRAMEWORKS']
 if linkage && !linkage.empty?
   Pod::UI.puts "Configuring CocoaPods with #{linkage}ally linked frameworks".green
