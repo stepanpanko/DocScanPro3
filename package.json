@@ -1,0 +1,47 @@
+{
+  "name": "DocScanPro3",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "react-native start",
+    "start:reset": "react-native start --reset-cache",
+    "ios": "react-native run-ios",
+    "android": "react-native run-android"
+  },
+  "dependencies": {
+    "@react-navigation/native": "7.1.19",
+    "@react-navigation/native-stack": "7.6.1",
+    "@shopify/flash-list": "1.8.3",
+    "date-fns": "4.1.0",
+    "pdf-lib": "1.17.1",
+    "react": "19.1.0",
+    "react-native": "0.81.4",
+    "react-native-document-picker": "9.3.1",
+    "react-native-document-scanner-plugin": "1.0.1",
+    "react-native-fs": "2.20.0",
+    "react-native-gesture-handler": "2.29.0",
+    "react-native-image-filter-kit": "0.8.0",
+    "react-native-image-picker": "8.2.1",
+    "react-native-image-resizer": "1.4.5",
+    "react-native-mmkv": "2.12.2",
+    "react-native-orientation-locker": "1.7.0",
+    "react-native-reanimated": "3.19.3",
+    "react-native-safe-area-context": "5.6.2",
+    "react-native-screens": "4.18.0",
+    "react-native-share": "12.2.0",
+    "react-native-text-recognition": "1.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "7.28.5",
+    "@react-native/babel-preset": "0.81.4",
+    "@react-native/metro-config": "0.81.4",
+    "@types/jest": "^30.0.0",
+    "@types/react": "^19.2.4",
+    "eslint": "8.57.1",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

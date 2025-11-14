@@ -1,0 +1,36 @@
+name: iOS Pods Sync
+
+on: workflow_dispatch
+
+permissions: { contents: write }
+
+jobs:
+  pods:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with: { ruby-version: '3.3' }
+      - name: Install CocoaPods
+        run: gem install cocoapods -N
+      - name: Install Pods
+        run: |
+          cd ios
+          pod repo update
+          pod install --repo-update --verbose
+      - name: Configure push auth
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+      - name: Commit Pods to branch pod-sync
+        run: |
+          git checkout -B pod-sync
+          git add -f ios/Pods ios/Podfile.lock ios/DocScanPro3.xcworkspace
+          git commit -m "chore(ios): add CI-generated Pods" || echo "No changes"
+          git push -u origin pod-sync --force
+
