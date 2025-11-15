@@ -5,6 +5,7 @@ import DocumentPicker, {
   DocumentPickerResponse,
 } from 'react-native-document-picker';
 import { launchImageLibrary, MediaType } from 'react-native-image-picker';
+import RNFS from 'react-native-fs';
 
 import { putPageFile } from '../storage';
 import { newDoc, newPage, type Doc, type Page } from '../types';
@@ -18,12 +19,54 @@ const { PDFRasterizer } = NativeModules as {
   };
 };
 
-function localPathFromPicker(res: DocumentPickerResponse) {
+/**
+ * Gets a readable URI from DocumentPicker response.
+ * If fileCopyUri is not available, manually copies the file to cache directory.
+ */
+async function getUriFromPicker(res: DocumentPickerResponse): Promise<string | null> {
   // Always prefer the copied URI (safe, accessible)
-  const uri = res.fileCopyUri ?? res.uri;
-  if (!uri) return null;
-  // Normalize file:// on iOS
-  return decodeURI(uri.replace('file://', ''));
+  if (res.fileCopyUri) {
+    console.log('[getUriFromPicker] Using fileCopyUri:', res.fileCopyUri);
+    return res.fileCopyUri;
+  }
+
+  // Fallback: if fileCopyUri is not available, manually copy the file
+  if (res.uri) {
+    console.warn('[getUriFromPicker] fileCopyUri not available, manually copying from:', res.uri);
+    
+    try {
+      // Extract file extension from name or URI
+      const fileName = res.name || 'file';
+      const ext = fileName.split('.').pop() || 'tmp';
+      const destPath = `${RNFS.CachesDirectoryPath}/${Date.now()}-${fileName}`;
+      
+      // Copy file to cache directory
+      const sourcePath = res.uri.startsWith('file://') 
+        ? res.uri.replace('file://', '') 
+        : res.uri;
+      
+      console.log('[getUriFromPicker] Copying from', sourcePath, 'to', destPath);
+      
+      // Check if source exists
+      const sourceExists = await RNFS.exists(sourcePath);
+      if (!sourceExists) {
+        console.error('[getUriFromPicker] Source file does not exist:', sourcePath);
+        return null;
+      }
+      
+      await RNFS.copyFile(sourcePath, destPath);
+      const copiedUri = `file://${destPath}`;
+      console.log('[getUriFromPicker] Successfully copied to:', copiedUri);
+      return copiedUri;
+    } catch (error: any) {
+      console.error('[getUriFromPicker] Failed to copy file:', error);
+      log('[getUriFromPicker] Failed to copy file', res.uri, error);
+      return null;
+    }
+  }
+
+  console.error('[getUriFromPicker] No URI available in response');
+  return null;
 }
 
 export async function importFromFiles(): Promise<Doc | null> {
@@ -49,13 +92,22 @@ export async function importFromFiles(): Promise<Doc | null> {
 
     // Process each selected file
     for (const res of results) {
-      const path = localPathFromPicker(res);
-      if (!path) continue;
+      const uri = await getUriFromPicker(res);
+      if (!uri) {
+        console.warn('[IMPORT] Skipping file - no readable URI available');
+        continue;
+      }
 
       const fileName = res.name || `file-${pages.length}`;
       const fileType = res.type || '';
 
-      console.log('[IMPORT] Processing file:', fileName, 'type:', fileType);
+      console.log('[FILES PICK]', {
+        uri,
+        fileCopyUri: res.fileCopyUri,
+        sourceUri: res.uri,
+        name: fileName,
+        type: fileType,
+      });
 
       const isPDF =
         (fileType?.includes('pdf') ?? false) ||
@@ -72,6 +124,8 @@ export async function importFromFiles(): Promise<Doc | null> {
         }
 
         try {
+          // PDF rasterizer needs a file path, so convert URI to path
+          const path = uri.startsWith('file://') ? uri.replace('file://', '') : uri;
           const pagePaths = await PDFRasterizer.rasterize(path, 250);
           console.log(
             '[IMPORT] pdf rasterized:',
@@ -94,11 +148,21 @@ export async function importFromFiles(): Promise<Doc | null> {
         console.log('[IMPORT] Processing image:', fileName);
 
         try {
-          const pageUri = await putPageFile(doc.id, path, pages.length);
+          console.log('[IMPORT] Calling putPageFile with uri:', uri);
+          const pageUri = await putPageFile(doc.id, uri, pages.length);
+          console.log('[IMPORT] putPageFile returned:', pageUri);
           const dimensions = await getImageDimensions(pageUri);
           pages.push(newPage(pageUri, dimensions.width, dimensions.height));
-        } catch (error) {
+          console.log('[IMPORT] Successfully added page:', pages.length);
+        } catch (error: any) {
           console.error('[IMPORT] Image processing failed:', error);
+          console.error('[IMPORT] Error details:', {
+            message: error?.message,
+            stack: error?.stack,
+            uri,
+            fileCopyUri: res.fileCopyUri,
+            sourceUri: res.uri,
+          });
           log('[IMPORT] Image processing failed for', fileName, error);
         }
       }
