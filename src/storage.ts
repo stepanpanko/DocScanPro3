@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import RNFS from 'react-native-fs';
 
 import { MMKV } from 'react-native-mmkv';
@@ -89,27 +90,66 @@ export async function putPageFile(docId: string, localUri: string, idx: number) 
   console.log('[putPageFile] called with:', { docId, localUri, idx });
   
   const dir = await docDir(docId);
-  // Works for file://, ph://, assets-library://
-  const srcPath = await toReadableFsPath(localUri);
-  console.log('[putPageFile] resolved srcPath:', srcPath);
   
-  const srcName = srcPath.split('/').pop() || `page-${idx + 1}.jpg`;
-  const ext = (srcName.split('.').pop() || 'jpg').toLowerCase();
-  const target = `${dir}/page-${String(idx + 1).padStart(3, '0')}.${ext}`;
-  console.log('[putPageFile] target path:', target);
-
-  const ok = await RNFS.exists(srcPath);
-  if (!ok) {
-    const error = `Source not found: ${srcPath} (from URI: ${localUri})`;
-    console.error('[putPageFile]', error);
-    throw new Error(error);
+  // 1) Try the "nice" resolved path first
+  let srcPath: string | null = null;
+  try {
+    srcPath = await toReadableFsPath(localUri);
+  } catch {
+    /* ignore */
   }
 
-  console.log('[putPageFile] copying from', srcPath, 'to', target);
-  await RNFS.copyFile(srcPath, target);
-  console.log('[putPageFile] copy successful');
+  const guessedName = (srcPath ?? localUri).split('/').pop() || `page-${idx + 1}.jpg`;
+  const ext = (guessedName.split('.').pop() || 'jpg').toLowerCase();
+  const target = `${dir}/page-${String(idx + 1).padStart(3, '0')}.${ext}`;
 
-  return `file://${target}`;
+  // A. resolved POSIX path exists → copy
+  if (srcPath && (await RNFS.exists(srcPath))) {
+    console.log('[putPageFile] copying from resolved path:', srcPath, 'to', target);
+    await RNFS.copyFile(srcPath, target);
+    return `file://${target}`;
+  }
+
+  // B. iOS Photos asset URI → copy via assets API directly to target
+  if (
+    Platform.OS === 'ios' &&
+    (localUri.startsWith('ph://') || localUri.startsWith('assets-library://'))
+  ) {
+    console.log('[putPageFile] copying iOS asset directly to target:', target);
+    await RNFS.copyAssetsFileIOS(localUri, target, 0, 0, 1.0, 0.9, 'contain');
+    return `file://${target}`;
+  }
+
+  // C. Some providers only work when we keep the file:// scheme on copy()
+  if (localUri.startsWith('file://')) {
+    const noScheme = localUri.slice(7);
+    // try with scheme stripped
+    if (await RNFS.exists(noScheme)) {
+      console.log('[putPageFile] copying from stripped path:', noScheme, 'to', target);
+      await RNFS.copyFile(noScheme, target);
+      return `file://${target}`;
+    }
+    // try removing /private (rare sandbox quirk)
+    const alt = noScheme.startsWith('/private/') ? noScheme.replace('/private', '') : null;
+    if (alt && (await RNFS.exists(alt))) {
+      console.log('[putPageFile] copying from alt path (no /private):', alt, 'to', target);
+      await RNFS.copyFile(alt, target);
+      return `file://${target}`;
+    }
+    // last resort: some iOS providers accept copyFile with the scheme
+    try {
+      console.log('[putPageFile] trying copyFile with scheme stripped:', localUri.replace(/^file:\/\//, ''), 'to', target);
+      await RNFS.copyFile(localUri.replace(/^file:\/\//, ''), target);
+      return `file://${target}`;
+    } catch {
+      /* ignore */
+    }
+  }
+
+  // D. Give a crystal clear error for logs
+  throw new Error(
+    `[putPageFile] Source not found. localUri=${localUri} resolved=${srcPath ?? 'null'}`
+  );
 }
 
 export async function removeDocFiles(docId: string) {
