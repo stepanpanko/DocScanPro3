@@ -148,39 +148,47 @@ export async function buildPdfFromImages(docId: string, doc: Doc) {
     const src = await getProcessedUriForExport(docPage);
     log(`[PDF] page ${i + 1}:`, src);
 
-    // 1) Read the file we have
-    let b64 = await readBase64(src);
+    // 1) Optimize image first to ensure consistent file sizes
+    // Resize to max 2000px and compress to 82% quality for optimal size/quality balance
+    let optimizedSrc = src;
+    try {
+      const r = await ImageResizer.createResizedImage(
+        src,
+        2000,
+        2000,
+        'JPEG',
+        82,
+        0,
+        undefined,
+        false,
+      );
+      const optimizedPath =
+        (r as { path?: string; uri?: string }).path ||
+        (r as { path?: string; uri?: string }).uri;
+      if (optimizedPath) {
+        optimizedSrc = optimizedPath;
+        log('[PDF] image optimized for export');
+      }
+    } catch (optimizeError) {
+      warn('[PDF] image optimization failed, using original:', optimizeError);
+    }
 
-    // 2) Try to embed as JPG, then PNG. If both fail, re-encode to JPG and try again.
+    // 2) Read the optimized file
+    let b64 = await readBase64(optimizedSrc);
+
+    // 3) Try to embed as JPG (should always work after optimization)
     let img: Awaited<ReturnType<typeof pdf.embedJpg>>;
 
     try {
       img = await pdf.embedJpg(dataUri(b64, 'jpg'));
       log('[PDF] embedded as JPG');
     } catch {
+      // Fallback: try PNG if JPEG fails (shouldn't happen after optimization)
       try {
         img = await pdf.embedPng(dataUri(b64, 'png'));
-        log('[PDF] embedded as PNG');
+        log('[PDF] embedded as PNG (fallback)');
       } catch {
-        warn('[PDF] embed failed; re-encoding to JPEG…');
-        const r = await ImageResizer.createResizedImage(
-          src,
-          3000,
-          3000,
-          'JPEG',
-          92,
-          0,
-          undefined,
-          false,
-        );
-        const outPath =
-          (r as { path?: string; uri?: string }).path ||
-          (r as { path?: string; uri?: string }).uri;
-        if (!outPath)
-          throw new Error('ImageResizer failed to return valid path');
-        b64 = await readBase64(outPath);
-        img = await pdf.embedJpg(dataUri(b64, 'jpg'));
-        log('[PDF] embedded after JPEG re-encode');
+        throw new Error('Failed to embed image in PDF');
       }
     }
 

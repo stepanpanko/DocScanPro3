@@ -85,7 +85,7 @@ export async function cropPerspective(
   imgW: number,
   imgH: number,
   quadNorm: NormalizedQuad,
-  quality = 0.92,
+  quality = 0.85,
 ): Promise<CropPerspectiveResult> {
   if (!perspectiveCropper?.cropPerspective) {
     throw new Error('PerspectiveCropper native module not available');

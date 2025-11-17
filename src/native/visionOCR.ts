@@ -7,6 +7,7 @@ export type VisionOCRWord = {
   width: number;
   height: number;
   conf?: number;
+  lang?: string; // optional, for logging/inspection only
 };
 
 export type VisionOCRResult = {

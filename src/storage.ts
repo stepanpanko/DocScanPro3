@@ -116,7 +116,7 @@ export async function putPageFile(docId: string, localUri: string, idx: number) 
     (localUri.startsWith('ph://') || localUri.startsWith('assets-library://'))
   ) {
     console.log('[putPageFile] copying iOS asset directly to target:', target);
-    await RNFS.copyAssetsFileIOS(localUri, target, 0, 0, 1.0, 0.9, 'contain');
+    await RNFS.copyAssetsFileIOS(localUri, target, 0, 0, 1.0, 0.85, 'contain');
     return `file://${target}`;
   }
 
