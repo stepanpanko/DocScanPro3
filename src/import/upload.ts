@@ -7,11 +7,19 @@ import DocumentPicker, {
 import { launchImageLibrary, MediaType } from 'react-native-image-picker';
 import RNFS from 'react-native-fs';
 
-import { putPageFile } from '../storage';
+import { putPageFile, putOriginalPdf } from '../storage';
 import { newDoc, newPage, type Doc, type Page } from '../types';
 import { getImageDimensions } from '../utils/images';
 import { log } from '../utils/log';
-import { defaultDocTitle } from '../utils/naming';
+import {
+  defaultDocTitle,
+  getNextDefaultDocName,
+} from '../utils/naming';
+import {
+  extractFilenameFromUri,
+  stripExtension,
+} from '../utils/filename';
+import { toReadableFsPath } from '../utils/paths';
 
 const { PDFRasterizer } = NativeModules as {
   PDFRasterizer?: {
@@ -23,11 +31,20 @@ const { PDFRasterizer } = NativeModules as {
  * Gets a readable URI from DocumentPicker response.
  * If fileCopyUri is not available, manually copies the file to cache directory.
  */
+/**
+ * Cleans a URI by removing query parameters and fragments
+ */
+function cleanUri(uri: string): string {
+  // Remove query parameters and fragments
+  return uri.split('?')[0].split('#')[0];
+}
+
 async function getUriFromPicker(res: DocumentPickerResponse): Promise<string | null> {
   // Always prefer the copied URI (safe, accessible)
   if (res.fileCopyUri) {
-    console.log('[getUriFromPicker] Using fileCopyUri:', res.fileCopyUri);
-    return res.fileCopyUri;
+    const cleanedUri = cleanUri(res.fileCopyUri);
+    console.log('[getUriFromPicker] Using fileCopyUri:', cleanedUri);
+    return cleanedUri;
   }
 
   // Fallback: if fileCopyUri is not available, manually copy the file
@@ -41,9 +58,11 @@ async function getUriFromPicker(res: DocumentPickerResponse): Promise<string | n
       const destPath = `${RNFS.CachesDirectoryPath}/${Date.now()}-${fileName}`;
       
       // Copy file to cache directory
-      const sourcePath = res.uri.startsWith('file://') 
-        ? res.uri.replace('file://', '') 
-        : res.uri;
+      // Clean the source URI first to remove query params and fragments
+      const cleanedSourceUri = cleanUri(res.uri);
+      const sourcePath = cleanedSourceUri.startsWith('file://') 
+        ? cleanedSourceUri.replace('file://', '') 
+        : cleanedSourceUri;
       
       console.log('[getUriFromPicker] Copying from', sourcePath, 'to', destPath);
       
@@ -57,7 +76,7 @@ async function getUriFromPicker(res: DocumentPickerResponse): Promise<string | n
       await RNFS.copyFile(sourcePath, destPath);
       const copiedUri = `file://${destPath}`;
       console.log('[getUriFromPicker] Successfully copied to:', copiedUri);
-      return copiedUri;
+      return cleanUri(copiedUri);
     } catch (error: any) {
       console.error('[getUriFromPicker] Failed to copy file:', error);
       log('[getUriFromPicker] Failed to copy file', res.uri, error);
@@ -69,7 +88,7 @@ async function getUriFromPicker(res: DocumentPickerResponse): Promise<string | n
   return null;
 }
 
-export async function importFromFiles(): Promise<Doc | null> {
+export async function importFromFiles(): Promise<Doc[]> {
   try {
     console.log('[IMPORT] Starting file import...');
 
@@ -83,14 +102,12 @@ export async function importFromFiles(): Promise<Doc | null> {
     console.log('[IMPORT] files picked:', results.length, 'items');
 
     if (results.length === 0) {
-      return null;
+      return [];
     }
 
-    const now = new Date();
-    const doc = newDoc(defaultDocTitle(now.getTime()));
-    const pages: Page[] = [];
+    const importedDocs: Doc[] = [];
 
-    // Process each selected file
+    // Process each selected file - each file becomes its own document
     for (const res of results) {
       const uri = await getUriFromPicker(res);
       if (!uri) {
@@ -113,6 +130,11 @@ export async function importFromFiles(): Promise<Doc | null> {
         (fileType?.includes('pdf') ?? false) ||
         fileName.toLowerCase().endsWith('.pdf');
 
+      // Create a new document for each file
+      const now = new Date();
+      const doc = newDoc(defaultDocTitle(now.getTime()));
+      const pages: Page[] = [];
+
       if (isPDF) {
         // Handle PDF files
         console.log('[IMPORT] Processing PDF:', fileName);
@@ -124,24 +146,100 @@ export async function importFromFiles(): Promise<Doc | null> {
         }
 
         try {
-          // PDF rasterizer needs a file path, so convert URI to path
-          const path = uri.startsWith('file://') ? uri.replace('file://', '') : uri;
-          const pagePaths = await PDFRasterizer.rasterize(path, 250);
+          // Extract filename from imported PDF first (for title and originalPdfPath)
+          const originalFilename = extractFilenameFromUri(uri);
+          const baseName = stripExtension(originalFilename);
+          
+          // Save the original PDF file for later export (preserves vector quality)
+          // Pass originalFilename so it can be used for unique naming
+          const originalPdfPath = await putOriginalPdf(doc.id, uri, originalFilename);
+          doc.originalPdfPath = originalPdfPath;
+          console.log('[IMPORT] Saved original PDF to:', originalPdfPath);
+
+          // Use extracted filename as doc title
+          if (baseName && baseName !== 'Document') {
+            doc.title = baseName;
+            console.log('[IMPORT] Set doc title from filename:', baseName);
+          }
+          
+          // Log final document metadata for verification
+          log('[IMPORT] PDF stored', {
+            title: doc.title,
+            originalPdfPath: doc.originalPdfPath,
+            originalFilename,
+            baseName,
+          });
+
+          // PDF rasterizer needs a file path, so convert URI to path properly
+          // Use the same path conversion logic as putOriginalPdf
+          let pdfPath: string | null = null;
+          try {
+            pdfPath = await toReadableFsPath(uri);
+          } catch (pathError) {
+            console.warn('[IMPORT] Failed to convert URI to path, trying fallback:', pathError);
+            // Fallback: strip file:// scheme
+            pdfPath = uri.startsWith('file://') ? uri.slice(7) : uri;
+          }
+
+          // Verify the file exists before trying to rasterize
+          if (!pdfPath) {
+            throw new Error('Failed to convert PDF URI to file path');
+          }
+
+          const fileExists = await RNFS.exists(pdfPath);
+          if (!fileExists) {
+            // Try alternative path formats
+            const alternatives = [
+              pdfPath,
+              uri.startsWith('file://') ? uri.slice(7) : uri,
+              pdfPath.startsWith('/private') ? pdfPath.replace('/private', '') : null,
+            ].filter(Boolean) as string[];
+
+            let foundPath: string | null = null;
+            for (const altPath of alternatives) {
+              if (await RNFS.exists(altPath)) {
+                foundPath = altPath;
+                break;
+              }
+            }
+
+            if (!foundPath) {
+              throw new Error(
+                `PDF file not found at any of these paths: ${alternatives.join(', ')}`
+              );
+            }
+            pdfPath = foundPath;
+          }
+
+          console.log('[IMPORT] Rasterizing PDF from path:', pdfPath);
+          const pagePaths = await PDFRasterizer.rasterize(pdfPath, 250);
           console.log(
             '[IMPORT] pdf rasterized:',
             pagePaths.length,
             'pages @250dpi',
           );
 
-          // Add each rasterized page
+          // Add each rasterized page (for thumbnails/OCR, but export will use original PDF)
           for (const pagePath of pagePaths) {
             const pageUri = await putPageFile(doc.id, pagePath, pages.length);
             const dimensions = await getImageDimensions(pageUri);
             pages.push(newPage(pageUri, dimensions.width, dimensions.height));
           }
-        } catch (error) {
+
+          // Update document with pages and add to imported docs
+          doc.pages = pages;
+          importedDocs.push(doc);
+          console.log('[IMPORT] created doc=', doc.id, 'pages=', pages.length);
+        } catch (error: any) {
           console.error('[IMPORT] PDF rasterization failed:', error);
+          console.error('[IMPORT] Error details:', {
+            message: error?.message,
+            stack: error?.stack,
+            uri,
+            fileName,
+          });
           log('[IMPORT] PDF rasterization failed for', fileName, error);
+          // Continue processing other files instead of stopping
         }
       } else {
         // Handle image files
@@ -154,6 +252,11 @@ export async function importFromFiles(): Promise<Doc | null> {
           const dimensions = await getImageDimensions(pageUri);
           pages.push(newPage(pageUri, dimensions.width, dimensions.height));
           console.log('[IMPORT] Successfully added page:', pages.length);
+
+          // Update document with pages and add to imported docs
+          doc.pages = pages;
+          importedDocs.push(doc);
+          console.log('[IMPORT] created doc=', doc.id, 'pages=', pages.length);
         } catch (error: any) {
           console.error('[IMPORT] Image processing failed:', error);
           console.error('[IMPORT] Error details:', {
@@ -168,25 +271,16 @@ export async function importFromFiles(): Promise<Doc | null> {
       }
     }
 
-    if (pages.length === 0) {
-      console.log('[IMPORT] No pages were successfully processed');
-      return null;
-    }
-
-    // Update document with pages
-    doc.pages = pages;
-
-    console.log('[IMPORT] created doc=', doc.id, 'pages=', pages.length);
-
-    return doc;
+    console.log('[IMPORT] Import complete. Created', importedDocs.length, 'documents');
+    return importedDocs;
   } catch (err: any) {
     if (isCancel(err)) {
       console.log('[IMPORT] picker cancelled');
-      return null; // Do not show error UI
+      return []; // Do not show error UI
     }
     console.error('[IMPORT] File import failed:', err);
     log('[IMPORT] File import failed:', err);
-    return null;
+    return [];
   }
 }
 
@@ -209,7 +303,9 @@ export async function importFromPhotos(): Promise<Doc | null> {
     console.log('[IMPORT] photos picked:', result.assets.length, 'images');
 
     const now = new Date();
-    const doc = newDoc(defaultDocTitle(now.getTime()));
+    // Use date-based naming for camera scans (photos import)
+    const defaultName = getNextDefaultDocName(now);
+    const doc = newDoc(defaultName);
     const pages: Page[] = [];
 
     // Process each selected photo

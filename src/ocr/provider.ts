@@ -46,12 +46,17 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
  * Main OCR function that processes a single page image
  * Prefers VisionOCR (with accurate bounding boxes), falls back to TextRecognition
  */
-export async function recognizePage(imagePath: string): Promise<OcrPage> {
+export async function recognizePage(
+  imagePath: string,
+  processedUri?: string,
+): Promise<OcrPage> {
+  // Use processedUri if available (for image-based docs), otherwise use original
+  const uriToUse = processedUri ?? imagePath;
   const startTime = Date.now();
-  log('[OCR] Starting recognition for:', imagePath);
+  log('[OCR] Starting recognition for:', uriToUse);
 
   try {
-    const { withScheme, plain } = toBestPath(imagePath);
+    const { withScheme, plain } = toBestPath(uriToUse);
 
     // Try VisionOCR first (provides accurate word-level bounding boxes)
     if (VisionOCR) {

@@ -1,22 +1,58 @@
 // src/pdf.ts
-import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { NativeModules } from 'react-native';
-import RNFS from 'react-native-fs';
-import ImageResizer from 'react-native-image-resizer';
 import Share from 'react-native-share';
+import RNFS from 'react-native-fs';
 
-import type { OcrWord, Doc } from './types';
+import type { Doc, Page } from './types';
 import { log, warn } from './utils/log';
-import { stripFileScheme } from './utils/paths';
+import { buildPdfNative } from './native/nativePDFBuilder';
+import { sanitizeFilename } from './utils/filename';
 
-const dataUri = (b64: string, kind: 'jpg' | 'png') =>
-  `data:image/${kind === 'jpg' ? 'jpeg' : 'png'};base64,${b64}`;
+/**
+ * Checks if a document has visual edits that require rebuilding from images.
+ * If the document came from an imported PDF and has no visual edits, we can
+ * return the original PDF to preserve vector quality.
+ */
+function hasVisualEdits(doc: Doc): boolean {
+  if (!doc.pages?.length) return false;
 
-async function readBase64(pathOrUri: string) {
-  return RNFS.readFile(stripFileScheme(pathOrUri), 'base64');
+  return doc.pages.some((p: Page) => {
+    // If user has rotated the page (non-zero rotation)
+    const rotated = !!p.rotation && p.rotation !== 0;
+
+    // If user has applied a non-default filter (not 'color')
+    const customFilter = p.filter && p.filter !== 'color';
+
+    // If user has enabled auto-contrast
+    const hasAutoContrast = p.autoContrast === true;
+
+    // If URI was changed (indicates cropping or other image manipulation)
+    // For imported PDFs, the URI will point to a rasterized image, but if
+    // it was cropped, the URI would have changed from the original raster.
+    // We can't easily detect this without tracking original URIs, so we'll
+    // be conservative: if any page has been edited, we rebuild.
+    // Note: This is a simple check. A more sophisticated approach would
+    // track original URIs, but for now this covers the main cases.
+
+    return rotated || customFilter || hasAutoContrast;
+  });
 }
 
-async function getProcessedUriForExport(page: any): Promise<string> {
+async function getProcessedUriForExport(page: Page): Promise<string> {
+  // If page already has processedUri (from applyFinalFilterToPage), use it
+  // This ensures we use the same processed image for OCR and export
+  if (page.processedUri) {
+    log('[PDF] Using pre-processed image:', page.processedUri);
+    return page.processedUri;
+  }
+
+  // Fallback: process on-the-fly (for backward compatibility or imported PDFs)
+  // Check if ImageFilters module is available
+  if (!NativeModules.ImageFilters) {
+    log('[PDF] ImageFilters module not available, using original image');
+    return page.uri;
+  }
+
   try {
     const result = await NativeModules.ImageFilters.process(page.uri, {
       filter: page.filter ?? 'color',
@@ -25,229 +61,135 @@ async function getProcessedUriForExport(page: any): Promise<string> {
     });
     return result;
   } catch (error) {
-    console.warn('[PDF] Native processing failed, using original:', error);
+    log('[PDF] Native processing failed, using original:', error);
     return page.uri;
   }
 }
 
-/**
- * Convert image pixel coordinates to PDF points within the actual image draw rectangle
- * Image coordinates: origin top-left, in pixels
- * PDF coordinates: origin bottom-left, in points
- */
-function imageRectToPdfRect(
-  box: { x: number; y: number; width: number; height: number },
-  ocrImageW: number,
-  ocrImageH: number,
-  drawRect: { x: number; y: number; width: number; height: number },
-): { x: number; y: number; size: number; baselineAdjust: number } {
-  // Scale from OCR image coordinates to the actual image draw area
-  const scaleX = drawRect.width / ocrImageW;
-  const scaleY = drawRect.height / ocrImageH;
+export async function buildPdfFromImages(docId: string, doc: Doc) {
+  // If this doc came from an imported PDF and we haven't done visual edits
+  // that require rebuilding the pages, we simply return the original PDF.
+  if (doc.originalPdfPath && !hasVisualEdits(doc)) {
+    const path = doc.originalPdfPath;
+    
+    // Verify the file actually exists before using it
+    const exists = await RNFS.exists(path);
+    if (exists) {
+      const uri = `file://${path}`;
+      log('[PDF] returning original imported PDF:', { uri, path });
+      return uri;
+    } else {
+      warn('[PDF] originalPdfPath missing, falling back to image export', {
+        path,
+        docId,
+        title: doc.title,
+      });
+    }
+  }
 
-  // Transform coordinates:
-  // OCR: origin top-left, PDF: origin bottom-left
-  // Map to the actual draw rectangle position
-  const x = drawRect.x + box.x * scaleX;
-  const y = drawRect.y + (drawRect.height - (box.y + box.height) * scaleY); // flip Y and align baseline at bottom of box
-  const size = Math.max(box.height * scaleY * 0.9, 6); // font size ~90% of box height, minimum 6 points
-  // Baseline correction (~20% of font size)
-  const baselineAdjust = size * 0.2;
+  // Fallback: build via native image-based pipeline (camera scans, edited docs, etc.)
+  log('[PDF] building via native image pipeline, pages:', doc.pages.length);
 
-  log(
-    `[PDF] Coord transform: OCR(${box.x},${box.y}) ${ocrImageW}x${ocrImageH} -> PDF(${x},${y}) in drawRect(${drawRect.x},${drawRect.y},${drawRect.width}x${drawRect.height}) scale(${scaleX},${scaleY})`,
+  // Process images with filters/rotation before passing to native builder
+  const processedPages = await Promise.all(
+    doc.pages.map(async page => ({
+      ...page,
+      uri: await getProcessedUriForExport(page),
+    })),
   );
 
-  return { x, y, size, baselineAdjust };
+  const docWithProcessedPages = {
+    ...doc,
+    pages: processedPages,
+  };
+
+  const pdfUri = await buildPdfNative(docWithProcessedPages);
+
+  log('[PDF] native wrote:', pdfUri);
+  return pdfUri;
 }
 
 /**
- * Draw invisible OCR text overlay on a PDF page
+ * Copies a PDF file to a temporary location with the specified filename.
+ * This ensures the shared file has the correct name.
+ * Overwrites existing file if it exists.
  */
-async function drawInvisibleTextLayer(
-  page: any, // PDFPage
-  font: any, // PDFFont
-  ocrWords: OcrWord[],
-  imageSize: { width: number; height: number },
-  drawRect: { x: number; y: number; width: number; height: number },
-): Promise<void> {
-  if (!ocrWords || ocrWords.length === 0) {
-    log('[PDF] No OCR data for text overlay');
-    return;
-  }
+async function copyPdfWithName(
+  sourceUri: string,
+  filename: string,
+): Promise<string> {
+  const tempDir = RNFS.TemporaryDirectoryPath;
+  const targetPath = `${tempDir}/${filename}`;
 
-  log(`[PDF] overlay words: ${ocrWords.length}`);
+  try {
+    // Remove file:// scheme if present
+    const sourcePath = sourceUri.startsWith('file://')
+      ? sourceUri.replace('file://', '')
+      : sourceUri;
 
-  for (const word of ocrWords) {
-    if (!word.text.trim()) continue; // Skip empty text
-
-    try {
-      const { x, y, size, baselineAdjust } = imageRectToPdfRect(
-        word.box,
-        imageSize.width,
-        imageSize.height,
-        drawRect,
-      );
-
-      // Draw text with very low opacity to make it invisible but searchable
-      page.drawText(word.text, {
-        x,
-        y: y + baselineAdjust, // Apply baseline correction
-        size,
-        font,
-        opacity: 0.001, // Nearly invisible but not exactly 0
-      });
-    } catch (textError) {
-      warn('[PDF] Failed to draw OCR text:', word.text, textError);
-      // Continue with other words even if one fails
+    // Ensure source exists
+    if (!(await RNFS.exists(sourcePath))) {
+      throw new Error(`Source file does not exist: ${sourcePath}`);
     }
+
+    // Remove existing file in temp if it exists (to overwrite)
+    if (await RNFS.exists(targetPath)) {
+      log('[PDF] Removing existing temp file:', targetPath);
+      await RNFS.unlink(targetPath);
+    }
+
+    // Copy to temp location with correct name
+    await RNFS.copyFile(sourcePath, targetPath);
+    
+    // Verify the copy succeeded
+    if (!(await RNFS.exists(targetPath))) {
+      throw new Error(`Failed to verify copied file exists: ${targetPath}`);
+    }
+
+    const targetUri = `file://${targetPath}`;
+    log('[PDF] Successfully copied PDF to:', targetUri, 'with filename:', filename);
+    
+    // Log file size for debugging
+    try {
+      const stat = await RNFS.stat(targetPath);
+      log('[PDF] Copied file size:', Math.round(stat.size / 1024), 'KB');
+    } catch (e) {
+      // Ignore stat errors
+    }
+
+    return targetUri;
+  } catch (error) {
+    log('[PDF] Failed to copy PDF with name:', error);
+    log('[PDF] Source URI:', sourceUri);
+    log('[PDF] Target path:', targetPath);
+    // Fallback to original URI if copy fails
+    return sourceUri;
   }
 }
 
-export async function buildPdfFromImages(docId: string, doc: Doc) {
-  const dir = `${RNFS.DocumentDirectoryPath}/DocScanPro/${docId}`;
-  await RNFS.mkdir(dir);
-  const pdfPath = `${dir}/export.pdf`;
+export async function shareFile(fileUri: string, doc?: Doc) {
+  // Get the document title - use doc.title if available, otherwise fallback
+  const baseName = doc?.title || 'Scan';
+  const safeName = sanitizeFilename(baseName) || 'Scan';
+  const filename = `${safeName}.pdf`;
 
-  log('[PDF] start, pages:', doc.pages.length);
+  log('[share] Document title:', doc?.title);
+  log('[share] Base name:', baseName);
+  log('[share] Safe name:', safeName);
+  log('[share] Final filename:', filename);
+  log('[share] Source URI:', fileUri);
 
-  // Only add invisible text layer if we have REAL bounding boxes from VisionOCR
-  // (empty ocrBoxes array means TextRecognition fallback was used - no accurate boxes)
-  const hasOcrData =
-    doc.ocrStatus === 'done' &&
-    doc.pages?.some(p => p.ocrBoxes && p.ocrBoxes.length > 0);
+  // Copy the PDF to a temp location with the correct filename
+  // This ensures iOS respects the filename when sharing
+  const renamedUri = await copyPdfWithName(fileUri, filename);
 
-  if (hasOcrData) {
-    log(
-      '[PDF] Document has OCR data with bounding boxes, will add invisible text layer',
-    );
-  } else if (doc.ocrStatus === 'done') {
-    log(
-      '[PDF] Document has OCR text but no bounding boxes (TextRecognition fallback), skipping overlay',
-    );
-  } else {
-    log('[PDF] No OCR data found, creating image-only PDF');
-  }
-
-  const pdf = await PDFDocument.create();
-
-  // Embed font for text overlay (only if we have OCR data)
-  let font;
-  if (hasOcrData) {
-    try {
-      font = await pdf.embedFont(StandardFonts.Helvetica);
-      log('[PDF] Embedded Helvetica font for text overlay');
-    } catch (fontError) {
-      warn('[PDF] Failed to embed font, skipping text overlay:', fontError);
-    }
-  }
-
-  for (let i = 0; i < doc.pages.length; i++) {
-    const docPage = doc.pages[i];
-    if (!docPage) continue;
-    const src = await getProcessedUriForExport(docPage);
-    log(`[PDF] page ${i + 1}:`, src);
-
-    // 1) Optimize image first to ensure consistent file sizes
-    // Resize to max 2000px and compress to 82% quality for optimal size/quality balance
-    let optimizedSrc = src;
-    try {
-      const r = await ImageResizer.createResizedImage(
-        src,
-        2000,
-        2000,
-        'JPEG',
-        82,
-        0,
-        undefined,
-        false,
-      );
-      const optimizedPath =
-        (r as { path?: string; uri?: string }).path ||
-        (r as { path?: string; uri?: string }).uri;
-      if (optimizedPath) {
-        optimizedSrc = optimizedPath;
-        log('[PDF] image optimized for export');
-      }
-    } catch (optimizeError) {
-      warn('[PDF] image optimization failed, using original:', optimizeError);
-    }
-
-    // 2) Read the optimized file
-    let b64 = await readBase64(optimizedSrc);
-
-    // 3) Try to embed as JPG (should always work after optimization)
-    let img: Awaited<ReturnType<typeof pdf.embedJpg>>;
-
-    try {
-      img = await pdf.embedJpg(dataUri(b64, 'jpg'));
-      log('[PDF] embedded as JPG');
-    } catch {
-      // Fallback: try PNG if JPEG fails (shouldn't happen after optimization)
-      try {
-        img = await pdf.embedPng(dataUri(b64, 'png'));
-        log('[PDF] embedded as PNG (fallback)');
-      } catch {
-        throw new Error('Failed to embed image in PDF');
-      }
-    }
-
-    const pdfPage = pdf.addPage([img.width, img.height]);
-    const drawRect = { x: 0, y: 0, width: img.width, height: img.height };
-    pdfPage.drawImage(img, drawRect);
-
-    // 3) Add invisible text layer if we have OCR data for this page
-    if (hasOcrData && font && docPage.ocrBoxes?.length) {
-      try {
-        const ocrBoxes = docPage.ocrBoxes!; // We know it exists and has length > 0
-
-        // Use the original image size from OCR data - this is critical for correct coordinate mapping
-        const firstWord = ocrBoxes[0];
-        if (!firstWord || !firstWord.imgW || !firstWord.imgH) {
-          warn(
-            `[PDF] OCR data missing image dimensions for page ${i + 1}, skipping text overlay`,
-          );
-          continue;
-        }
-
-        const ocrImageSize = { width: firstWord.imgW, height: firstWord.imgH };
-
-        await drawInvisibleTextLayer(
-          pdfPage,
-          font,
-          ocrBoxes,
-          ocrImageSize,
-          drawRect,
-        );
-
-        log(
-          `[PDF] Added invisible text layer to page ${i + 1} (OCR: ${ocrImageSize.width}x${ocrImageSize.height} -> PDF drawRect: ${drawRect.width}x${drawRect.height})`,
-        );
-      } catch (overlayError) {
-        warn(
-          `[PDF] Failed to add text overlay to page ${i + 1}:`,
-          overlayError,
-        );
-        // Continue without overlay for this page
-      }
-    }
-  }
-
-  // 4) Save the PDF
-  const pdfB64 = await pdf.saveAsBase64({ dataUri: false });
-  await RNFS.writeFile(pdfPath, pdfB64, 'base64');
-  const finalUri = `file://${pdfPath}`;
-  log('[pdf] wrote:', finalUri);
-
-  return finalUri;
-}
-
-export async function shareFile(fileUri: string) {
-  log('[share] opening:', fileUri);
+  log('[share] Renamed URI:', renamedUri);
+  log('[share] Opening share dialog with filename:', filename);
+  
   await Share.open({
-    url: fileUri,
+    url: renamedUri,
     type: 'application/pdf',
-    filename: 'DocScanPro.pdf',
+    filename: filename,
     failOnCancel: false,
   });
 }

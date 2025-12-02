@@ -13,9 +13,31 @@ class PDFRasterizer: NSObject {
                  rejecter reject: @escaping RCTPromiseRejectBlock) {
     // Perform heavy rasterization work off the main thread to avoid UI freezes and watchdog kills
     DispatchQueue.global(qos: .userInitiated).async {
-      guard let pdf = PDFDocument(url: URL(fileURLWithPath: src)) else {
+      // Clean the path - remove any query parameters or fragments
+      let cleanPath: String = {
+        if let withoutQuery = src.split(separator: "?").first {
+          if let withoutFragment = withoutQuery.split(separator: "#").first {
+            return String(withoutFragment)
+          }
+          return String(withoutQuery)
+        }
+        return src
+      }()
+      
+      // Check if file exists
+      let fileManager = FileManager.default
+      guard fileManager.fileExists(atPath: cleanPath) else {
         DispatchQueue.main.async {
-          reject("E_NO_PDF", "Failed to open PDF", nil)
+          reject("E_FILE_NOT_FOUND", "PDF file not found at path: \(cleanPath)", nil)
+        }
+        return
+      }
+      
+      // Try to create PDF document
+      let fileURL = URL(fileURLWithPath: cleanPath)
+      guard let pdf = PDFDocument(url: fileURL) else {
+        DispatchQueue.main.async {
+          reject("E_NO_PDF", "Failed to open PDF at path: \(cleanPath). File may be corrupted or not a valid PDF.", nil)
         }
         return
       }

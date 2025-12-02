@@ -1,5 +1,6 @@
 export type Rotation = 0 | 90 | 180 | 270;
 export type Filter = 'color' | 'grayscale' | 'bw';
+export type ExportQuality = 'color-high' | 'color-medium' | 'grayscale';
 
 export type OcrWord = {
   text: string;
@@ -33,6 +34,7 @@ export type Page = {
   height?: number;
   ocrText?: string; // page.fullText from OCR
   ocrBoxes?: OcrWord[]; // page.words from OCR
+  processedUri?: string; // final processed image URI (filtered + resized) for OCR and export
 };
 
 export interface Doc {
@@ -47,6 +49,8 @@ export interface Doc {
   ocrExcerpt?: string; // first ~200 chars across pages
   ocrPages?: OcrPage[];
   pdfPath?: string;
+  originalPdfPath?: string; // absolute path to the imported PDF file for this doc, if any
+  exportQuality?: ExportQuality; // quality profile for image-based exports
 }
 
 export type Folder = {

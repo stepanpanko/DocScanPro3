@@ -19,11 +19,17 @@ import {
   saveFoldersIndex,
   putPageFile,
   removeDocFiles,
+  createFolder as createFolderStorage,
+  moveDocToFolder,
 } from './src/storage';
+import { initializeStorageSync, syncAllData } from './src/storage-sync';
 import { Doc, Page, Folder, newDoc, newPage } from './src/types';
 import { getImageDimensions } from './src/utils/images';
 import { log } from './src/utils/log';
-import { defaultDocTitle } from './src/utils/naming';
+import {
+  defaultDocTitle,
+  getNextDefaultDocName,
+} from './src/utils/naming';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -51,13 +57,43 @@ export default function App() {
     }
   });
 
-  // Listen to app state changes to resume OCR queue
+  // Initialize storage sync on app startup
+  React.useEffect(() => {
+    initializeStorageSync().catch(e => {
+      console.error('[APP] Failed to initialize storage sync:', e);
+    });
+  }, []);
+
+  // Save data whenever it changes to ensure persistence
+  React.useEffect(() => {
+    try {
+      saveDocsIndex(docs);
+      saveFoldersIndex(folders);
+      // Attempt to sync to cloud if enabled
+      syncAllData(docs, folders).catch(e => {
+        console.error('[APP] Failed to sync data:', e);
+      });
+    } catch (e) {
+      console.error('[APP] Failed to save data:', e);
+    }
+  }, [docs, folders]);
+
+  // Listen to app state changes to resume OCR queue and ensure data is saved
   React.useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === 'active') {
         console.log('[OCR][auto] app active — resuming queue');
         log('[OCR] App became active, OCR queue will continue automatically');
         // The queue will automatically continue processing if there are pending documents
+      } else if (nextAppState === 'background' || nextAppState === 'inactive') {
+        // Save data when app goes to background to ensure persistence
+        try {
+          saveDocsIndex(docs);
+          saveFoldersIndex(folders);
+          console.log('[APP] Saved data to storage before background');
+        } catch (e) {
+          console.error('[APP] Failed to save data on background:', e);
+        }
       }
     };
 
@@ -67,9 +103,16 @@ export default function App() {
     );
 
     return () => {
+      // Save data on unmount as well
+      try {
+        saveDocsIndex(docs);
+        saveFoldersIndex(folders);
+      } catch (e) {
+        console.error('[APP] Failed to save data on unmount:', e);
+      }
       subscription?.remove();
     };
-  }, []);
+  }, [docs, folders]);
 
   // removed unused updateDoc
 
@@ -85,7 +128,10 @@ export default function App() {
   async function createFromScan(imageUris: string[]) {
     try {
       if (!imageUris?.length) return;
-      const doc = newDoc(defaultDocTitle());
+      const now = new Date();
+      // Use date-based naming for camera scans
+      const defaultName = getNextDefaultDocName(now);
+      const doc = newDoc(defaultName);
       const pages: Page[] = [];
       for (let i = 0; i < imageUris.length; i++) {
         const uri = imageUris[i];
@@ -138,11 +184,7 @@ export default function App() {
 
   // Folder management functions
   function createFolder(name: string): Folder {
-    const folder: Folder = {
-      id: String(Date.now()),
-      name,
-      createdAt: Date.now(),
-    };
+    const folder = createFolderStorage(name);
     setFolders(prev => {
       const next = [...prev, folder];
       saveFoldersIndex(next);
@@ -176,26 +218,11 @@ export default function App() {
 
   function moveDoc(docId: string, folderId: string | null) {
     console.log('[MOVE] Moving doc', docId, 'to folder', folderId);
+    // Update storage first
+    moveDocToFolder(docId, folderId);
+    // Then update local state to reflect the change
     setDocs(prev => {
-      const next = prev.map(d => {
-        if (d.id === docId) {
-          console.log(
-            '[MOVE] Updating doc',
-            d.title,
-            'from folder',
-            d.folderId,
-            'to folder',
-            folderId,
-          );
-          return { ...d, folderId };
-        }
-        return d;
-      });
-      saveDocsIndex(next);
-      console.log(
-        '[MOVE] Updated docs:',
-        next.map(d => ({ id: d.id, title: d.title, folderId: d.folderId })),
-      );
+      const next = prev.map(d => (d.id === docId ? { ...d, folderId } : d));
       return next;
     });
   }
@@ -214,18 +241,20 @@ export default function App() {
   }
 
   function handleDeletePage(docId: string, pageId: string) {
-    setDocs(prev =>
-      prev.map(d =>
+    setDocs(prev => {
+      const next = prev.map(d =>
         d.id === docId
           ? { ...d, pages: d.pages.filter(p => p.id !== pageId) }
           : d,
-      ),
-    );
+      );
+      saveDocsIndex(next);
+      return next;
+    });
   }
 
   function handleRotatePage(docId: string, pageId: string) {
-    setDocs(prev =>
-      prev.map(d =>
+    setDocs(prev => {
+      const next = prev.map(d =>
         d.id === docId
           ? {
               ...d,
@@ -243,8 +272,10 @@ export default function App() {
               ),
             }
           : d,
-      ),
-    );
+      );
+      saveDocsIndex(next);
+      return next;
+    });
   }
 
   function handleFilter(
@@ -252,21 +283,23 @@ export default function App() {
     pageId: string,
     filter: 'color' | 'grayscale' | 'bw',
   ) {
-    setDocs(prev =>
-      prev.map(d =>
+    setDocs(prev => {
+      const next = prev.map(d =>
         d.id === docId
           ? {
               ...d,
               pages: d.pages.map(p => (p.id === pageId ? { ...p, filter } : p)),
             }
           : d,
-      ),
-    );
+      );
+      saveDocsIndex(next);
+      return next;
+    });
   }
 
   function handleAutoContrast(docId: string, pageId: string, enabled: boolean) {
-    setDocs(prev =>
-      prev.map(d =>
+    setDocs(prev => {
+      const next = prev.map(d =>
         d.id === docId
           ? {
               ...d,
@@ -275,8 +308,10 @@ export default function App() {
               ),
             }
           : d,
-      ),
-    );
+      );
+      saveDocsIndex(next);
+      return next;
+    });
   }
 
   function handleApplyPageEdits(
@@ -346,16 +381,22 @@ export default function App() {
   }
 
   async function handleExport(docId: string) {
-    const doc = docs.find(d => d.id === docId);
-    if (!doc) return;
+    // Get the latest doc from storage to ensure we have the most recent title
+    const latestDocs = getDocsIndex();
+    const doc = latestDocs.find(d => d.id === docId);
+    if (!doc) {
+      log('[EXPORT] Document not found:', docId);
+      return;
+    }
+    
     try {
-      log('[EXPORT] Starting export for document:', doc.id);
+      log('[EXPORT] Starting export for document:', doc.id, 'title:', doc.title);
 
       // Build PDF from document (will process images with filters/rotation)
       const pdfUri = await buildPdfFromImages(doc.id, doc);
 
-      // Share the PDF
-      await shareFile(pdfUri);
+      // Share the PDF with doc title as filename
+      await shareFile(pdfUri, doc);
 
       log('[EXPORT] Export completed successfully');
     } catch (e: any) {

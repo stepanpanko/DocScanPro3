@@ -2,6 +2,7 @@
 import { getDocsIndex, saveDocsIndex } from '../storage';
 import type { Doc, OcrStatus } from '../types';
 import { log, warn, error } from '../utils/log';
+import { applyFinalFilterToPage } from '../export/processPage';
 
 import { ocrEvents } from './events';
 import { recognizePage } from './provider';
@@ -205,22 +206,45 @@ class OcrQueue {
     ocrEvents.emitProgress({ documentId, processed, total });
 
     // Process pages sequentially
-    const updatedPages = [...doc.pages];
+    let updatedPages = [...doc.pages];
 
-    for (let i = 0; i < doc.pages.length; i++) {
+    // First, process pages for image-based docs (apply filters + resize)
+    // Skip this for imported PDFs (they use originalPdfPath for export)
+    if (!doc.originalPdfPath) {
+      log('[OCR] Processing pages for image-based doc before OCR');
+      updatedPages = await Promise.all(
+        doc.pages.map(async (page, index) => {
+          try {
+            return await applyFinalFilterToPage(page, doc, index);
+          } catch (error) {
+            warn(`[OCR] Failed to process page ${index + 1} for export:`, error);
+            return page; // Use original if processing fails
+          }
+        }),
+      );
+
+      // Save processed pages back to storage
+      updateDocumentOcrState(documentId, {
+        pages: updatedPages,
+      });
+    }
+
+    for (let i = 0; i < updatedPages.length; i++) {
       // Check if cancelled
       if (this.currentDocumentId !== documentId) {
         log('[OCR] Processing cancelled for:', documentId);
         return;
       }
 
-      const page = doc.pages[i];
+      const page = updatedPages[i];
       if (!page) continue;
 
       try {
-        log(`[OCR] Processing page ${i + 1}/${total}:`, page.uri);
+        // Use processedUri if available (for image-based docs), otherwise use original uri
+        const imageUri = page.processedUri ?? page.uri;
+        log(`[OCR] Processing page ${i + 1}/${total}:`, imageUri);
 
-        const ocrResult = await recognizePage(page.uri);
+        const ocrResult = await recognizePage(page.uri, page.processedUri);
 
         // Update page with OCR data
         updatedPages[i] = {

@@ -45,7 +45,7 @@ type ItemProps = {
   onMore: (doc: Doc) => void;
 };
 
-type FolderItem = Folder | { id: null; name: string; createdAt: number };
+type FolderItem = Folder | { id: 'all'; name: string; createdAt: number };
 
 type LibraryScreenProps = {
   docs: Doc[];
@@ -124,7 +124,8 @@ export default function LibraryScreen({
   const navigation = useNavigation() as NavigationProp;
   const insets = useSafeAreaInsets();
   const listRef = useRef<any>(null);
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  // Use 'all' as the default instead of null for consistency
+  const [selectedFolderId, setSelectedFolderId] = useState<string | 'all'>('all');
   const [rename, setRename] = useState<{
     open: boolean;
     id: string | null;
@@ -132,28 +133,23 @@ export default function LibraryScreen({
   }>({ open: false, id: null, text: '' });
   const [version, setVersion] = useState(0);
 
-  const filteredDocs = useMemo(() => {
-    console.log('[FOLDER] Selected folder ID:', selectedFolderId);
-    console.log('[FOLDER] Total docs:', docs.length);
-    console.log(
-      '[FOLDER] Docs with folderId:',
-      docs.map(d => ({ id: d.id, title: d.title, folderId: d.folderId })),
-    );
+  // Reset to 'all' if the selected folder was deleted
+  useEffect(() => {
+    if (selectedFolderId !== 'all' && !folders.find(f => f.id === selectedFolderId)) {
+      console.log('[FOLDER] Selected folder was deleted, resetting to "all"');
+      setSelectedFolderId('all');
+    }
+  }, [folders, selectedFolderId]);
 
-    if (selectedFolderId === null) {
+  // Filter documents based on selected folder
+  // NEVER mutate the docs array - always create a new filtered array
+  const filteredDocs = useMemo(() => {
+    if (selectedFolderId === 'all') {
       // Show all documents when "All" is selected
-      console.log('[FOLDER] Showing all documents');
-      return docs;
+      return [...docs]; // Create a new array to avoid mutations
     } else {
       // Show only documents in the selected folder
-      const filtered = docs.filter(d => d.folderId === selectedFolderId);
-      console.log(
-        '[FOLDER] Filtered docs for folder',
-        selectedFolderId,
-        ':',
-        filtered.length,
-      );
-      return filtered;
+      return docs.filter(d => d.folderId === selectedFolderId);
     }
   }, [docs, selectedFolderId]);
 
@@ -174,8 +170,9 @@ export default function LibraryScreen({
       },
       async idx => {
         if (idx === 0) {
-          const doc = await importFromFiles();
-          if (doc) {
+          const docs = await importFromFiles();
+          // Import each document separately
+          for (const doc of docs) {
             if (!doc.title) doc.title = defaultDocTitle(doc.createdAt);
             onImport(doc);
           }
@@ -254,7 +251,7 @@ export default function LibraryScreen({
 
   const handleFolderLongPress = useCallback(
     (folder: FolderItem) => {
-      if (!folder.id) return;
+      if (!folder.id || folder.id === 'all') return;
       ActionSheetIOS.showActionSheetWithOptions(
         {
           options: ['Rename folder…', 'Delete folder', 'Cancel'],
@@ -306,7 +303,7 @@ export default function LibraryScreen({
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
-          data={[{ id: null, name: 'All', createdAt: 0 }, ...folders]}
+          data={[{ id: 'all', name: 'All', createdAt: 0 }, ...folders]}
           keyExtractor={f => String(f.id)}
           contentContainerStyle={{ paddingHorizontal: 12 }}
           renderItem={({ item }) => (
@@ -314,7 +311,7 @@ export default function LibraryScreen({
               label={item.name}
               selected={selectedFolderId === item.id}
               onPress={() =>
-                setSelectedFolderId(item.id === null ? null : item.id)
+                setSelectedFolderId(item.id === 'all' ? 'all' : item.id)
               }
               onLongPress={() => handleFolderLongPress(item)}
             />
@@ -343,7 +340,8 @@ export default function LibraryScreen({
         data={filteredDocs}
         extraData={{ count: filteredDocs.length, version, selectedFolderId }}
         renderItem={renderItem}
-        keyExtractor={d => String(d.id)}
+        keyExtractor={item => item.id}
+        estimatedItemSize={80}
         ListEmptyComponent={<Text style={styles.emptyText}>No documents.</Text>}
       />
 

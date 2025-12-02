@@ -40,7 +40,31 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
 
   override func bundleURL() -> URL? {
 #if DEBUG
-    RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+    // Try to get bundle URL from Metro bundler (auto-discovery via Bonjour)
+    if let url = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index") {
+      return url
+    }
+    
+    // Fallback: Read Mac IP from file (automatically detected during build)
+    // The build script generates MacIP.txt in the source directory
+    // and it should be included as a resource in the bundle
+    let macIP: String
+    if let ipPath = Bundle.main.path(forResource: "MacIP", ofType: "txt"),
+       let ip = try? String(contentsOfFile: ipPath).trimmingCharacters(in: .whitespacesAndNewlines),
+       !ip.isEmpty {
+      macIP = ip
+    } else {
+      // Last resort fallback (shouldn't happen if build script works)
+      // This will be updated automatically on next build
+      macIP = "192.168.1.61"
+    }
+    
+    if let fallbackURL = URL(string: "http://\(macIP):8081/index.bundle?platform=ios&dev=true") {
+      return fallbackURL
+    }
+    
+    // Last resort: return nil to show error (user can shake device to enter URL manually)
+    return nil
 #else
     Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif

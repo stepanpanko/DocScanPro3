@@ -11,11 +11,11 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		4A3DA4202EC8B27E00C23E92 /* PDFRasterizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A3DA41F2EC8B27E00C23E92 /* PDFRasterizer.swift */; };
 		4A3DA4212EC8B27E00C23E92 /* PDFRasterizer.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3DA41E2EC8B27E00C23E92 /* PDFRasterizer.m */; };
+		5B4EA5303FD9C38F11D25E93 /* NativePDFBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B4EA52F3FD9C38F11D25E93 /* NativePDFBuilder.swift */; };
+		5B4EA5313FD9C38F11D25E93 /* NativePDFBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 5B4EA52E3FD9C38F11D25E93 /* NativePDFBuilder.m */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		8A7F684E3823158F283E006A /* NativePDFBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66FDC875D00132C6D85F6DBE /* NativePDFBuilder.swift */; };
 		C3D4E5F6A7B8C9D0E1F2A3B4 /* PDFKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C3D4E5F6A7B8C9D0E1F2A3B5 /* PDFKit.framework */; };
-		D7E2FC611D5F21E02A16C407 /* NativePDFBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 854AB5A2F54DBDC95161B101 /* NativePDFBuilder.m */; };
 		FD2B77502CE1BD642A0CA63F /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -28,12 +28,12 @@
 		4A3DA41E2EC8B27E00C23E92 /* PDFRasterizer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PDFRasterizer.m; sourceTree = "<group>"; };
 		4A3DA41F2EC8B27E00C23E92 /* PDFRasterizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFRasterizer.swift; sourceTree = "<group>"; };
 		4A3DA4222EC8B28000C23E92 /* DocScanPro3Temp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DocScanPro3Temp-Bridging-Header.h"; sourceTree = "<group>"; };
+		5B4EA52E3FD9C38F11D25E93 /* NativePDFBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = NativePDFBuilder.m; sourceTree = "<group>"; };
+		5B4EA52F3FD9C38F11D25E93 /* NativePDFBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativePDFBuilder.swift; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-DocScanPro3Temp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DocScanPro3Temp.release.xcconfig"; path = "Target Support Files/Pods-DocScanPro3Temp/Pods-DocScanPro3Temp.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-DocScanPro3Temp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-DocScanPro3Temp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		66FDC875D00132C6D85F6DBE /* NativePDFBuilder.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DocScanPro3Temp/NativePDFBuilder.swift; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DocScanPro3Temp/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = DocScanPro3Temp/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		854AB5A2F54DBDC95161B101 /* NativePDFBuilder.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = DocScanPro3Temp/NativePDFBuilder.m; sourceTree = "<group>"; };
 		C3D4E5F6A7B8C9D0E1F2A3B5 /* PDFKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PDFKit.framework; path = System/Library/Frameworks/PDFKit.framework; sourceTree = SDKROOT; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -60,8 +60,6 @@
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
 				D4E5F6A7B8C9D0E1F2A3B4C5 /* PDFRasterizer */,
-				66FDC875D00132C6D85F6DBE /* NativePDFBuilder.swift */,
-				854AB5A2F54DBDC95161B101 /* NativePDFBuilder.m */,
 			);
 			name = DocScanPro3Temp;
 			sourceTree = "<group>";
@@ -119,6 +117,8 @@
 			children = (
 				4A3DA41E2EC8B27E00C23E92 /* PDFRasterizer.m */,
 				4A3DA41F2EC8B27E00C23E92 /* PDFRasterizer.swift */,
+				5B4EA52E3FD9C38F11D25E93 /* NativePDFBuilder.m */,
+				5B4EA52F3FD9C38F11D25E93 /* NativePDFBuilder.swift */,
 				4A3DA4222EC8B28000C23E92 /* DocScanPro3Temp-Bridging-Header.h */,
 			);
 			name = PDFRasterizer;
@@ -215,7 +215,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Point Xcode to Node (Apple Silicon Homebrew path; change if yours differs)\nexport NODE_BINARY=/opt/homebrew/bin/node\nexport BUNDLE_REACT_NATIVE_BINARY=\"$NODE_BINARY\"\n\n# Tell RN which entry file you use (change to index.js if that’s yours)\nexport ENTRY_FILE=index.tsx\n\n# Don’t bundle in Debug (only Release); avoids main.jsbundle issues\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  export SKIP_BUNDLING=0\nelse\n  export SKIP_BUNDLING=1\nfi\n\nset -e\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nRN_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\"$WITH_ENVIRONMENT\" \"$RN_XCODE\"\n";
+			shellScript = "# Point Xcode to Node (Apple Silicon Homebrew path; change if yours differs)\nexport NODE_BINARY=/opt/homebrew/bin/node\nexport BUNDLE_REACT_NATIVE_BINARY=\"$NODE_BINARY\"\n\n# Tell RN which entry file you use\nexport ENTRY_FILE=index.js\n\n# Don't bundle in Debug (only Release); avoids main.jsbundle issues\nif [ \"$CONFIGURATION\" = \"Release\" ]; then\n  export SKIP_BUNDLING=0\nelse\n  export SKIP_BUNDLING=1\nfi\n\nset -e\nWITH_ENVIRONMENT=\"$REACT_NATIVE_PATH/scripts/xcode/with-environment.sh\"\nRN_XCODE=\"$REACT_NATIVE_PATH/scripts/react-native-xcode.sh\"\n\"$WITH_ENVIRONMENT\" \"$RN_XCODE\"\n";
 		};
 		00EEFC60759A1932668264C0 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -290,9 +290,9 @@
 			files = (
 				4A3DA4202EC8B27E00C23E92 /* PDFRasterizer.swift in Sources */,
 				4A3DA4212EC8B27E00C23E92 /* PDFRasterizer.m in Sources */,
+				5B4EA5303FD9C38F11D25E93 /* NativePDFBuilder.swift in Sources */,
+				5B4EA5313FD9C38F11D25E93 /* NativePDFBuilder.m in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
-				8A7F684E3823158F283E006A /* NativePDFBuilder.swift in Sources */,
-				D7E2FC611D5F21E02A16C407 /* NativePDFBuilder.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

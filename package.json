@@ -8,10 +8,10 @@
     "metro": "react-native start --host 0.0.0.0 --port 8081",
     "ios": "react-native run-ios",
     "ios:device": "RCT_NO_IDB=1 react-native run-ios --udid 00008110-000A30490244801E --scheme DocScanPro3Temp --configuration Debug --port 8081 --no-packager",
-    "ios:build:device": "xcodebuild -workspace ios/DocScanPro3Temp.xcworkspace -scheme DocScanPro3Temp -configuration Debug -destination id=00008110-000A30490244801E -derivedDataPath ios/build",
+    "ios:build:device": "MAC_IP=$(./scripts/detect-mac-ip.sh) && echo \"Detected Mac IP: $MAC_IP\" && echo \"$MAC_IP\" > ios/DocScanPro3Temp/MacIP.txt && xcodebuild -workspace ios/DocScanPro3Temp.xcworkspace -scheme DocScanPro3Temp -configuration Debug -destination 'generic/platform=iOS' -derivedDataPath ios/build USER_DEFINED_MAC_IP=\"$MAC_IP\" -allowProvisioningUpdates",
     "ios:install:device": "bash -lc 'APP=$(ls -d ios/build/Build/Products/Debug-iphoneos/*.app | head -n 1); xcrun devicectl device install app --device 00008110-000A30490244801E \"$APP\"; xcrun devicectl device process launch --device 00008110-000A30490244801E com.stepanpanko.docscanpro3temp'",
     "ios:kill:metro": "pkill -f 'react-native' || pkill -f 'metro' || pkill -f 'node.*8081' || true",
-    "ios:dev:device": "pnpm ios:kill:metro && sleep 1 && (pnpm metro > /dev/null 2>&1 &) && sleep 3 && pnpm ios:build:device && pnpm ios:install:device",
+    "ios:dev:device": "pnpm ios:kill:metro && sleep 1 && (pnpm metro > /tmp/metro.log 2>&1 &) && ./scripts/wait-for-metro.sh && pnpm ios:build:device && pnpm ios:install:device",
     "android": "react-native run-android"
   },
   "dependencies": {
